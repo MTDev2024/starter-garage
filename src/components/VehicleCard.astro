@@ -1,0 +1,82 @@
+---
+import { Image } from "astro:assets";
+import type { Vehicle } from "../config/types";
+import { client } from "../config/client";
+import Icon from "./Icon.astro";
+
+interface Props {
+  vehicle: Vehicle;
+}
+
+const { vehicle } = Astro.props;
+const { statusLabels } = client.vehicles;
+
+const priceFormatter = new Intl.NumberFormat(client.meta.locale, {
+  style: "currency",
+  currency: vehicle.currency,
+  maximumFractionDigits: 0,
+});
+
+const mileageFormatter = new Intl.NumberFormat(client.meta.locale);
+
+// The badge itself is always a solid, opaque light pill with dark text — that
+// guarantees readable contrast no matter what the underlying photo looks
+// like. Color-coding comes from a small decorative dot instead of the badge
+// background, so it never has to carry the text's own contrast requirement.
+const statusDotColor: Record<Vehicle["status"], string> = {
+  disponible: "bg-success",
+  reserve: "bg-warning",
+  vendu: "bg-text-muted",
+};
+---
+
+<article class="group flex flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card">
+  <a href={`/vehicules/${vehicle.slug}`} class="relative block">
+    <Image
+      src={vehicle.cover}
+      alt={vehicle.coverAlt}
+      width={480}
+      height={320}
+      class="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+    <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-pill bg-surface px-3 py-1 font-heading text-xs font-semibold text-ink shadow-card">
+      <span class:list={["size-2 rounded-pill", statusDotColor[vehicle.status]]} aria-hidden="true"></span>
+      {statusLabels[vehicle.status]}
+    </span>
+  </a>
+
+  <div class="flex flex-1 flex-col gap-4 p-6">
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="font-heading text-lg font-bold text-ink">
+        <a href={`/vehicules/${vehicle.slug}`} class="hover:text-brand">{vehicle.name}</a>
+      </h3>
+      <p class="whitespace-nowrap font-heading text-lg font-extrabold text-brand">
+        {priceFormatter.format(vehicle.price)}
+      </p>
+    </div>
+
+    <ul class="grid grid-cols-2 gap-y-2 text-sm text-text-muted">
+      <li class="flex items-center gap-2">
+        <Icon name="calendar" class="size-4 text-text-muted" /> {vehicle.specs.year}
+      </li>
+      <li class="flex items-center gap-2">
+        <Icon name="gauge" class="size-4 text-text-muted" /> {mileageFormatter.format(vehicle.specs.mileageKm)} km
+      </li>
+      <li class="flex items-center gap-2">
+        <Icon name="fuel" class="size-4 text-text-muted" /> {vehicle.specs.fuel}
+      </li>
+      <li class="flex items-center gap-2">
+        <Icon name="cog" class="size-4 text-text-muted" /> {vehicle.specs.transmission}
+      </li>
+    </ul>
+
+    <a
+      href={`/vehicules/${vehicle.slug}`}
+      class="mt-auto inline-flex items-center gap-2 font-heading text-sm font-semibold text-ink group-hover:text-brand"
+    >
+      {client.vehicles.ctaLabel}
+      <Icon name="arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
+    </a>
+  </div>
+</article>

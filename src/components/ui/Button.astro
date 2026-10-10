@@ -1,0 +1,41 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Icon from "../Icon.astro";
+import type { IconName } from "../../config/types";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "md" | "lg";
+  icon?: IconName;
+  class?: string;
+}
+
+const {
+  href,
+  variant = "primary",
+  size = "md",
+  icon = "arrow-right",
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-pill font-heading font-semibold transition-colors duration-150 focus-visible:outline-offset-4";
+
+const variants = {
+  primary: "bg-brand text-text-on-dark hover:bg-brand-dark",
+  secondary: "bg-ink text-text-on-dark hover:bg-ink-soft",
+  ghost: "bg-transparent text-ink ring-1 ring-inset ring-border hover:bg-surface-muted",
+};
+
+const sizes = {
+  md: "px-6 py-3 text-sm",
+  lg: "px-8 py-4 text-base",
+};
+---
+
+<a href={href} class:list={[base, variants[variant], sizes[size], className]} {...rest}>
+  <slot />
+  <Icon name={icon} class="size-4" />
+</a>
