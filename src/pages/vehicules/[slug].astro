@@ -1,0 +1,101 @@
+---
+import { Image } from "astro:assets";
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/Icon.astro";
+import { client } from "../../config/client";
+
+export function getStaticPaths() {
+  return client.vehicles.items.map((vehicle) => ({
+    params: { slug: vehicle.slug },
+    props: { vehicle },
+  }));
+}
+
+const { vehicle } = Astro.props;
+const { statusLabels } = client.vehicles;
+
+const priceFormatter = new Intl.NumberFormat(client.meta.locale, {
+  style: "currency",
+  currency: vehicle.currency,
+  maximumFractionDigits: 0,
+});
+const mileageFormatter = new Intl.NumberFormat(client.meta.locale);
+
+const specRows = [
+  { icon: "calendar" as const, label: "Année", value: String(vehicle.specs.year) },
+  { icon: "gauge" as const, label: "Kilométrage", value: `${mileageFormatter.format(vehicle.specs.mileageKm)} km` },
+  { icon: "fuel" as const, label: "Carburant", value: vehicle.specs.fuel },
+  { icon: "cog" as const, label: "Transmission", value: vehicle.specs.transmission },
+  { icon: "engine" as const, label: "Motorisation", value: vehicle.specs.engine },
+  { icon: "car" as const, label: "Couleur / Portes", value: `${vehicle.specs.color} · ${vehicle.specs.doors} portes` },
+];
+---
+
+<Layout title={`${vehicle.name} — véhicule d'occasion`} description={vehicle.description}>
+  <Container as="div" class="py-12 lg:py-20">
+    <a href="/#vehicules" class="inline-flex items-center gap-2 font-heading text-sm font-semibold text-text-muted hover:text-brand">
+      <Icon name="chevron-left" class="size-4" />
+      Retour aux véhicules
+    </a>
+
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div class="relative">
+        <Image
+          src={vehicle.cover}
+          alt={vehicle.coverAlt}
+          width={720}
+          height={520}
+          class="aspect-[4/3] w-full rounded-lg object-cover shadow-card"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <span class="absolute left-5 top-5 rounded-pill bg-surface px-4 py-1.5 font-heading text-xs font-semibold text-ink shadow-card">
+          {statusLabels[vehicle.status]}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <div>
+          <h1 class="font-heading text-3xl font-extrabold text-ink sm:text-4xl">{vehicle.name}</h1>
+          <p class="mt-2 font-heading text-2xl font-bold text-brand">{priceFormatter.format(vehicle.price)}</p>
+        </div>
+
+        <p class="text-base leading-relaxed text-text-muted">{vehicle.description}</p>
+
+        <ul class="grid grid-cols-2 gap-4 rounded-card border border-border p-6">
+          {
+            specRows.map((row) => (
+              <li class="flex items-start gap-3">
+                <Icon name={row.icon} class="mt-0.5 size-5 shrink-0 text-brand" />
+                <div>
+                  <p class="text-xs uppercase tracking-wide text-text-muted">{row.label}</p>
+                  <p class="font-heading text-sm font-semibold text-ink">{row.value}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <ul class="flex flex-col gap-2">
+          {
+            vehicle.highlights.map((point) => (
+              <li class="flex items-center gap-2 text-sm text-text">
+                <Icon name="check" class="size-4 text-brand" />
+                {point}
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="flex flex-wrap gap-4">
+          <Button href={`/#devis`} size="lg">Je suis intéressé(e)</Button>
+          <Button href={client.contact.phoneHref} variant="ghost" size="lg" icon="phone">
+            {client.contact.phone}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </Container>
+</Layout>
