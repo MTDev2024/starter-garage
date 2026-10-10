@@ -1,0 +1,104 @@
+---
+import { client } from "../../config/client";
+import Icon from "../Icon.astro";
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+
+const { nav, meta, headerCta, contact } = client;
+---
+
+<header class="sticky top-0 z-50 border-b border-border bg-surface/90 backdrop-blur">
+  <Container as="div" class="flex h-20 items-center justify-between gap-4">
+    <a href="#accueil" class="font-heading text-2xl font-extrabold tracking-tight text-ink">
+      {meta.name}<span class="text-brand">.</span>
+    </a>
+
+    <nav aria-label="Navigation principale" class="hidden lg:block">
+      <ul class="flex items-center gap-8">
+        {
+          nav.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="font-heading text-sm font-semibold text-ink transition-colors hover:text-brand"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="hidden items-center gap-5 lg:flex">
+      <a href={contact.phoneHref} class="flex items-center gap-2 font-heading text-sm font-semibold text-ink hover:text-brand">
+        <Icon name="phone" class="size-4 text-brand" />
+        {contact.phone}
+      </a>
+      <Button href={headerCta.href} size="md">{headerCta.label}</Button>
+    </div>
+
+    <button
+      type="button"
+      id="mobile-nav-toggle"
+      class="inline-flex items-center justify-center rounded-sm p-2 text-ink lg:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <span class="sr-only">Ouvrir le menu</span>
+      <Icon name="menu" class="size-7" />
+    </button>
+  </Container>
+
+  <div id="mobile-nav" class="hidden border-t border-border bg-surface lg:hidden" hidden>
+    <Container as="div" class="flex flex-col gap-6 py-6">
+      <ul class="flex flex-col gap-4">
+        {
+          nav.map((link) => (
+            <li>
+              <a href={link.href} class="block font-heading text-base font-semibold text-ink">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a href={contact.phoneHref} class="flex items-center gap-2 font-heading text-sm font-semibold text-ink">
+        <Icon name="phone" class="size-4 text-brand" />
+        {contact.phone}
+      </a>
+      <Button href={headerCta.href} size="md" class="w-full">{headerCta.label}</Button>
+    </Container>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("mobile-nav-toggle");
+  const panel = document.getElementById("mobile-nav");
+
+  if (toggle && panel) {
+    toggle.addEventListener("click", () => {
+      const isOpen = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!isOpen));
+      panel.hidden = isOpen;
+      panel.classList.toggle("hidden", isOpen);
+    });
+
+    panel.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        toggle.setAttribute("aria-expanded", "false");
+        panel.hidden = true;
+        panel.classList.add("hidden");
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+        toggle.setAttribute("aria-expanded", "false");
+        panel.hidden = true;
+        panel.classList.add("hidden");
+        toggle.focus();
+      }
+    });
+  }
+</script>
