@@ -378,7 +378,7 @@ export const client: ClientConfig = {
     ctaHref: "#blog",
     posts: [
       {
-        title: "16 conseils pour éviter les crevaisons",
+        title: "16 conseils pour faire durer vos pneus plus longtemps",
         excerpt: "Les gestes simples à adopter pour prolonger la durée de vie de vos pneus et rouler en sécurité.",
         date: "2026-01-21",
         category: "Pneus",
