@@ -1,0 +1,60 @@
+---
+import { Image } from "astro:assets";
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+import Icon from "../Icon.astro";
+
+const { whyChooseUs } = client;
+const [imgA, imgB, imgC] = whyChooseUs.images;
+---
+
+<section class="bg-ink py-20 text-text-on-dark lg:py-28">
+  <Container as="div" class="grid items-center gap-12 lg:grid-cols-2">
+    <div class="grid grid-cols-2 gap-4">
+      {
+        imgA && (
+          <Image
+            src={imgA.src}
+            alt={imgA.alt}
+            width={380}
+            height={480}
+            class="col-span-2 aspect-[4/3] w-full rounded-card object-cover sm:col-span-1 sm:aspect-[3/4]"
+            loading="lazy"
+          />
+        )
+      }
+      <div class="flex flex-col gap-4">
+        {
+          [imgB, imgC].filter(Boolean).map((img) => (
+            <Image
+              src={img!.src}
+              alt={img!.alt}
+              width={380}
+              height={220}
+              class="aspect-[4/3] w-full rounded-card object-cover"
+              loading="lazy"
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <span class="font-heading text-sm font-semibold uppercase tracking-wider text-brand-on-dark">{whyChooseUs.eyebrow}</span>
+      <h2 class="font-heading text-3xl font-bold leading-tight text-text-on-dark sm:text-4xl">{whyChooseUs.title}</h2>
+      <p class="max-w-lg text-base leading-relaxed text-text-on-dark-muted">{whyChooseUs.description}</p>
+      <ul class="mt-2 grid gap-4 sm:grid-cols-2">
+        {
+          whyChooseUs.features.map((feature) => (
+            <li class="flex items-center gap-3 rounded-card bg-ink-soft px-4 py-3">
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-pill bg-brand text-text-on-dark">
+                <Icon name={feature.icon} class="size-4" />
+              </span>
+              <span class="font-heading text-sm font-semibold text-text-on-dark">{feature.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Container>
+</section>

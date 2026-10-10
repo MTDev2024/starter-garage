@@ -1,0 +1,84 @@
+---
+import { Image } from "astro:assets";
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+import Icon from "../Icon.astro";
+
+const { testimonials } = client;
+---
+
+<section class="bg-surface-muted py-20 lg:py-28">
+  <Container as="div" class="flex flex-col items-center gap-10">
+    <span class="font-heading text-sm font-semibold uppercase tracking-wider text-brand">{testimonials.eyebrow}</span>
+    <h2 class="max-w-xl text-center font-heading text-3xl font-bold text-ink sm:text-4xl">{testimonials.title}</h2>
+
+    <Icon name="quote" class="size-10 text-brand" />
+
+    <ul
+      data-testimonial-track
+      tabindex="0"
+      aria-label="Témoignages clients, défilement horizontal"
+      class="grid w-full auto-cols-[100%] grid-flow-col overflow-x-auto scroll-smooth snap-x snap-mandatory"
+    >
+      {
+        testimonials.items.map((item) => (
+          <li class="flex snap-center flex-col items-center gap-6 px-4 text-center">
+            <p class="max-w-2xl text-lg leading-relaxed text-text sm:text-xl">“{item.quote}”</p>
+            <div class="flex items-center gap-3">
+              <Image src={item.avatar} alt="" width={56} height={56} class="size-14 rounded-pill object-cover" loading="lazy" />
+              <div class="text-left">
+                <p class="font-heading text-sm font-semibold text-ink">{item.name}</p>
+                <p class="text-xs text-text-muted">{item.role}</p>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div data-testimonial-dots class="flex gap-2">
+      {
+        testimonials.items.map((_, index) => (
+          <button
+            type="button"
+            data-testimonial-dot={index}
+            aria-label={`Afficher le témoignage ${index + 1}`}
+            class="size-2.5 rounded-pill bg-border transition-colors data-[active=true]:bg-brand"
+          />
+        ))
+      }
+    </div>
+  </Container>
+</section>
+
+<script>
+  const track = document.querySelector<HTMLElement>("[data-testimonial-track]");
+  const dots = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-testimonial-dot]"));
+  const slides = Array.from(track?.querySelectorAll("li") ?? []);
+
+  if (track && slides.length && dots.length) {
+    dots[0].dataset.active = "true";
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener("click", () => {
+        slides[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = slides.indexOf(entry.target as HTMLLIElement);
+            dots.forEach((dot, dotIndex) => {
+              dot.dataset.active = String(dotIndex === index);
+            });
+          }
+        });
+      },
+      { root: track, threshold: 0.6 },
+    );
+
+    slides.forEach((slide) => observer.observe(slide));
+  }
+</script>

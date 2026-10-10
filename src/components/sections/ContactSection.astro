@@ -1,0 +1,78 @@
+---
+import { Image } from "astro:assets";
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import Icon from "../Icon.astro";
+
+const { contactSection, contact } = client;
+---
+
+<section id="contact" class="py-20 lg:py-28">
+  <Container as="div" class="grid overflow-hidden rounded-lg bg-brand shadow-card lg:grid-cols-2">
+    <div class="flex flex-col justify-center gap-8 p-8 text-text-on-dark sm:p-12">
+      <div>
+        <span class="font-heading text-sm font-semibold uppercase tracking-wider text-text-on-dark">{contactSection.eyebrow}</span>
+        <h2 class="mt-2 font-heading text-3xl font-bold leading-tight sm:text-4xl">{contactSection.title}</h2>
+        <p class="mt-3 max-w-md text-sm text-text-on-dark">{contactSection.description}</p>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div>
+          <h3 class="flex items-center gap-2 font-heading text-sm font-semibold uppercase tracking-wide">
+            <Icon name="clock" class="size-4" /> Horaires
+          </h3>
+          <ul class="mt-3 flex flex-col gap-1 text-sm text-text-on-dark">
+            {contact.hours.map((row) => <li>{row.days} : {row.hours}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h3 class="flex items-center gap-2 font-heading text-sm font-semibold uppercase tracking-wide">
+            <Icon name="map-pin" class="size-4" /> Adresse
+          </h3>
+          <p class="mt-3 text-sm text-text-on-dark">{contact.addressLine1}<br />{contact.addressLine2}</p>
+          <p class="mt-2 text-sm text-text-on-dark">{contact.phone}<br />{contact.email}</p>
+        </div>
+      </div>
+
+      <Button href={contactSection.ctaHref} variant="secondary" class="w-fit">{contactSection.ctaLabel}</Button>
+    </div>
+
+    <div class="relative min-h-80">
+      <button
+        type="button"
+        data-map-trigger
+        class="group absolute inset-0 flex size-full flex-col items-center justify-center gap-3 text-text-on-dark"
+      >
+        <Image
+          src={contactSection.image}
+          alt={contactSection.imageAlt}
+          width={640}
+          height={640}
+          class="absolute inset-0 -z-10 size-full object-cover brightness-[.55] transition-[filter] group-hover:brightness-[.45]"
+          loading="lazy"
+        />
+        <span class="flex size-14 items-center justify-center rounded-pill bg-text-on-dark text-brand">
+          <Icon name="map-pin" class="size-6" />
+        </span>
+        <span class="font-heading text-sm font-semibold">Afficher la carte</span>
+      </button>
+    </div>
+  </Container>
+</section>
+
+<script define:vars={{ mapEmbedUrl: client.contact.mapEmbedUrl, mapTitle: `Carte de localisation — ${client.meta.name}` }}>
+  const trigger = document.querySelector("[data-map-trigger]");
+
+  trigger?.addEventListener("click", () => {
+    const container = trigger.parentElement;
+    if (!container) return;
+    const iframe = document.createElement("iframe");
+    iframe.src = mapEmbedUrl;
+    iframe.title = mapTitle;
+    iframe.loading = "lazy";
+    iframe.referrerPolicy = "no-referrer-when-downgrade";
+    iframe.className = "size-full min-h-80 border-0";
+    container.replaceChildren(iframe);
+  });
+</script>

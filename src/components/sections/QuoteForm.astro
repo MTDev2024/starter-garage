@@ -1,0 +1,162 @@
+---
+import { Image } from "astro:assets";
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+
+const { quoteForm } = client;
+---
+
+<section id="devis" class="py-20 lg:py-28">
+  <Container as="div" class="grid overflow-hidden rounded-lg shadow-card lg:grid-cols-2">
+    <div class="relative hidden lg:block">
+      <Image
+        src={quoteForm.image}
+        alt={quoteForm.imageAlt}
+        width={640}
+        height={760}
+        class="size-full object-cover"
+        loading="lazy"
+      />
+    </div>
+
+    <div class="bg-ink p-8 text-text-on-dark sm:p-12">
+      <span class="font-heading text-sm font-semibold uppercase tracking-wider text-brand-on-dark">{quoteForm.eyebrow}</span>
+      <h2 class="mt-3 font-heading text-2xl font-bold leading-tight sm:text-3xl">{quoteForm.title}</h2>
+      <p class="mt-3 text-sm text-text-on-dark-muted">{quoteForm.description}</p>
+
+      <form
+        id="quote-form"
+        class="mt-8 grid gap-5"
+        method="POST"
+        action={quoteForm.endpoint || undefined}
+        data-endpoint={quoteForm.endpoint}
+        data-success={quoteForm.successMessage}
+        data-error={quoteForm.errorMessage}
+        data-pending={quoteForm.pendingLabel}
+        data-submit-label={quoteForm.submitLabel}
+        novalidate
+      >
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="qf-name" class="text-sm font-medium text-text-on-dark-muted">Nom complet</label>
+            <input
+              id="qf-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+              class="rounded-sm border border-white/15 bg-ink-soft px-4 py-3 text-sm text-text-on-dark placeholder:text-text-on-dark-muted focus-visible:border-brand"
+              placeholder="Votre nom"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="qf-email" class="text-sm font-medium text-text-on-dark-muted">Email</label>
+            <input
+              id="qf-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              class="rounded-sm border border-white/15 bg-ink-soft px-4 py-3 text-sm text-text-on-dark placeholder:text-text-on-dark-muted focus-visible:border-brand"
+              placeholder="vous@exemple.fr"
+            />
+          </div>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="qf-phone" class="text-sm font-medium text-text-on-dark-muted">Téléphone</label>
+            <input
+              id="qf-phone"
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              required
+              class="rounded-sm border border-white/15 bg-ink-soft px-4 py-3 text-sm text-text-on-dark placeholder:text-text-on-dark-muted focus-visible:border-brand"
+              placeholder="06 00 00 00 00"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="qf-service" class="text-sm font-medium text-text-on-dark-muted">Service concerné</label>
+            <select
+              id="qf-service"
+              name="service"
+              required
+              class="rounded-sm border border-white/15 bg-ink-soft px-4 py-3 text-sm text-text-on-dark focus-visible:border-brand"
+            >
+              <option value="" selected disabled>Choisissez un service</option>
+              {quoteForm.serviceOptions.map((option) => <option value={option}>{option}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="qf-message" class="text-sm font-medium text-text-on-dark-muted">Comment pouvons-nous vous aider ?</label>
+          <textarea
+            id="qf-message"
+            name="message"
+            rows="3"
+            class="rounded-sm border border-white/15 bg-ink-soft px-4 py-3 text-sm text-text-on-dark placeholder:text-text-on-dark-muted focus-visible:border-brand"
+            placeholder="Décrivez brièvement votre besoin"
+          ></textarea>
+        </div>
+
+        <button
+          type="submit"
+          class="mt-2 inline-flex items-center justify-center rounded-pill bg-brand px-6 py-3.5 font-heading text-sm font-semibold text-text-on-dark transition-colors hover:bg-brand-dark"
+        >
+          {quoteForm.submitLabel}
+        </button>
+
+        <p id="quote-form-status" role="status" aria-live="polite" class="text-sm"></p>
+      </form>
+    </div>
+  </Container>
+</section>
+
+<script>
+  const form = document.getElementById("quote-form") as HTMLFormElement | null;
+  const status = document.getElementById("quote-form-status");
+  const submitButton = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+  if (form && status && submitButton) {
+    const endpoint = form.dataset.endpoint;
+    const submitLabel = form.dataset.submitLabel ?? "Envoyer";
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) return;
+
+      if (!endpoint) {
+        status.textContent = "Formulaire non connecté : renseignez quoteForm.endpoint dans src/config/client.ts.";
+        status.className = "text-sm text-warning";
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = form.dataset.pending ?? "Envoi en cours…";
+      status.textContent = "";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+
+        if (!response.ok) throw new Error("Request failed");
+
+        status.textContent = form.dataset.success ?? "Merci, votre demande a bien été envoyée.";
+        status.className = "text-sm text-success";
+        form.reset();
+      } catch {
+        status.textContent = form.dataset.error ?? "Une erreur est survenue, merci de réessayer.";
+        status.className = "text-sm text-brand";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = submitLabel;
+      }
+    });
+  }
+</script>

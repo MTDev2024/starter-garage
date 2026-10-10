@@ -1,0 +1,64 @@
+---
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+
+const { newsletter } = client;
+---
+
+<section class="bg-ink py-16 text-text-on-dark">
+  <Container as="div" class="flex flex-col items-center gap-6 text-center">
+    <h2 class="max-w-xl font-heading text-2xl font-bold sm:text-3xl">{newsletter.title}</h2>
+    <p class="max-w-lg text-sm text-text-on-dark-muted">{newsletter.description}</p>
+
+    <form
+      id="newsletter-form"
+      class="flex w-full max-w-md flex-col gap-3 sm:flex-row"
+      data-endpoint={newsletter.endpoint}
+      novalidate
+    >
+      <label for="newsletter-email" class="sr-only">Adresse email</label>
+      <input
+        id="newsletter-email"
+        name="email"
+        type="email"
+        required
+        placeholder={newsletter.placeholder}
+        autocomplete="email"
+        class="min-w-0 flex-1 rounded-pill border border-white/15 bg-ink-soft px-5 py-3 text-sm text-text-on-dark placeholder:text-text-on-dark-muted focus-visible:border-brand"
+      />
+      <button
+        type="submit"
+        class="rounded-pill bg-brand px-6 py-3 font-heading text-sm font-semibold text-text-on-dark transition-colors hover:bg-brand-dark"
+      >
+        {newsletter.ctaLabel}
+      </button>
+    </form>
+    <p id="newsletter-status" role="status" aria-live="polite" class="text-xs text-text-on-dark-muted"></p>
+    <p class="text-xs text-text-on-dark-muted">{newsletter.disclaimer}</p>
+  </Container>
+</section>
+
+<script>
+  const form = document.getElementById("newsletter-form") as HTMLFormElement | null;
+  const status = document.getElementById("newsletter-status");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity() || !status) return;
+
+    const endpoint = form.dataset.endpoint;
+    if (!endpoint) {
+      status.textContent = "Inscription non connectée : renseignez newsletter.endpoint dans src/config/client.ts.";
+      return;
+    }
+
+    try {
+      const response = await fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Request failed");
+      status.textContent = "Merci, votre inscription est confirmée.";
+      form.reset();
+    } catch {
+      status.textContent = "Une erreur est survenue, merci de réessayer.";
+    }
+  });
+</script>

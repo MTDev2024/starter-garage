@@ -1,0 +1,75 @@
+---
+import { Image } from "astro:assets";
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import Icon from "../Icon.astro";
+
+const { gallery } = client;
+---
+
+<section id="realisations" class="py-20 lg:py-28">
+  <Container as="div" class="flex flex-col gap-10">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading eyebrow={gallery.eyebrow} title={gallery.title} description={gallery.description} />
+      <div class="flex gap-3">
+        <button
+          type="button"
+          data-gallery-prev
+          class="flex size-11 items-center justify-center rounded-pill border border-border text-ink transition-colors hover:border-brand hover:text-brand"
+        >
+          <span class="sr-only">Réalisation précédente</span>
+          <Icon name="chevron-left" class="size-5" />
+        </button>
+        <button
+          type="button"
+          data-gallery-next
+          class="flex size-11 items-center justify-center rounded-pill bg-ink text-text-on-dark transition-colors hover:bg-brand"
+        >
+          <span class="sr-only">Réalisation suivante</span>
+          <Icon name="chevron-right" class="size-5" />
+        </button>
+      </div>
+    </div>
+
+    <ul
+      data-gallery-track
+      tabindex="0"
+      aria-label={`Galerie de réalisations — ${gallery.items.length} photos, défilement horizontal`}
+      class="grid auto-cols-[80%] grid-flow-col gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory sm:auto-cols-[45%] lg:auto-cols-[30%]"
+      style="scrollbar-width: thin;"
+    >
+      {
+        gallery.items.map((item) => (
+          <li class="snap-start">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              width={420}
+              height={420}
+              class="aspect-square w-full rounded-card object-cover"
+              loading="lazy"
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>
+
+<script>
+  const track = document.querySelector<HTMLElement>("[data-gallery-track]");
+  const prevBtn = document.querySelector<HTMLButtonElement>("[data-gallery-prev]");
+  const nextBtn = document.querySelector<HTMLButtonElement>("[data-gallery-next]");
+
+  if (track && prevBtn && nextBtn) {
+    const scrollByCard = (direction: 1 | -1) => {
+      const card = track.querySelector("li");
+      const amount = (card?.clientWidth ?? track.clientWidth * 0.8) + 16;
+      track.scrollBy({ left: amount * direction, behavior: "smooth" });
+    };
+
+    prevBtn.addEventListener("click", () => scrollByCard(-1));
+    nextBtn.addEventListener("click", () => scrollByCard(1));
+  }
+</script>

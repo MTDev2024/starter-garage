@@ -1,0 +1,21 @@
+---
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+
+const { brands } = client;
+---
+
+<section class="py-16">
+  <Container as="div" class="flex flex-col items-center gap-10">
+    <h2 class="text-center font-heading text-2xl font-bold text-ink sm:text-3xl">{brands.title}</h2>
+    <ul class="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+      {
+        brands.items.map((brand) => (
+          <li class="font-heading text-xl font-extrabold tracking-tight text-text-muted transition-colors hover:text-ink">
+            {brand.name}
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>

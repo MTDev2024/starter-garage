@@ -1,0 +1,18 @@
+---
+import { client } from "../../config/client";
+import Container from "../ui/Container.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import VehicleCard from "../VehicleCard.astro";
+
+const { vehicles } = client;
+---
+
+<section id="vehicules" class="bg-surface-muted py-20 lg:py-28">
+  <Container as="div" class="flex flex-col gap-10">
+    <SectionHeading eyebrow={vehicles.eyebrow} title={vehicles.title} description={vehicles.description} align="center" class="mx-auto" />
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {vehicles.items.map((vehicle) => <VehicleCard vehicle={vehicle} />)}
+    </div>
+  </Container>
+</section>
